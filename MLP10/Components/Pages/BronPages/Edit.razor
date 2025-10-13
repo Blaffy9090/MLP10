@@ -1,0 +1,161 @@
+﻿@page "/brons/edit"
+@using Microsoft.EntityFrameworkCore
+@using MLP10.Data
+@inject IDbContextFactory<MLP10.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Редактировать</PageTitle>
+
+<h1>Редактировать</h1>
+
+<hr />
+@if (Arenda is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Arenda" OnValidSubmit="UpdateArenda" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                @if (op == 2)
+                {
+                    <div class="mb-3">
+                        <label for="apartamentid" class="form-label">Номер:</label>
+                        <InputSelect id="apartamentid" @bind-Value="Arenda.ApartamentId" class="form-control">
+                            <option value="">...</option>
+                            @if (apartaments != null)
+                            {
+                                @foreach (var apartament in apartaments)
+                                {
+                                    <option value="@apartament.ApartamentId">@apartament.ApartamentNumber</option>
+                                }
+                            }
+
+                        </InputSelect>
+                        <ValidationMessage For="() => Arenda.ApartamentId" class="text-danger" />
+                    </div>
+                    <input type="hidden" name="Arenda.GostId" id="apartamentid" @bind="Arenda.GostId" />
+                }
+                @if (op == 1)
+                {
+                    <div class="mb-3">
+                        <label for="apartamentid" class="form-label">Гость:</label>
+                        <InputSelect id="gostid" @bind-Value="Arenda.GostId" class="form-control">
+                            <option value="">...</option>
+                            @if (gosts != null)
+                            {
+                                @foreach (var gost in gosts)
+                                {
+                                    <option value="@gost.GostId">@gost.FirstName @gost.LastName</option>
+                                }
+                            }
+
+                        </InputSelect>
+                        <ValidationMessage For="() => Arenda.GostId" class="text-danger" />
+                    </div>
+                    <input type="hidden" name="Arenda.ApartamentId" id="gostid" @bind="Arenda.ApartamentId" />
+                }
+                <div class="mb-3">
+                    <label for="datein" class="form-label">Дата заселения:</label>
+                    <InputDate id="datein" @bind-Value="Arenda.DateIn" class="form-control" />
+                    <ValidationMessage For="() => Arenda.DateIn" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="dateout" class="form-label">Дата выселения:</label>
+                    <InputDate id="dateout" @bind-Value="Arenda.DateOut" class="form-control" />
+                    <ValidationMessage For="() => Arenda.DateOut" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="cost" class="form-label">Стоимость:</label>
+                    <InputNumber id="cost" @bind-Value="Arenda.Cost" class="form-control" />
+                    <ValidationMessage For="() => Arenda.Cost" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="@($"brons?id={id}&op={op}")">Вернуться</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int ArendaId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int? op { get; set; }
+
+    private int id { get; set; }
+
+    public IEnumerable<Apartament> apartaments = default!;
+
+    public IEnumerable<Gost> gosts = default!;
+
+    [SupplyParameterFromForm]
+    private Arenda? Arenda { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Arenda ??= await context.Arendas.FirstOrDefaultAsync(m => m.ArendaId == ArendaId);
+
+
+        if (op == null || Arenda is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+
+        if (op == 1)
+        {
+            gosts = await context.Gosts.ToListAsync();
+            id = Arenda!.ApartamentId;
+        }
+        else
+        {
+            apartaments = await context.Apartaments.ToListAsync();
+            id = Arenda!.GostId;
+        }
+
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateArenda()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        Arenda!.apartament = null;
+        Arenda!.gost = null;
+
+        context.Attach(Arenda!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ArendaExists(Arenda!.ArendaId))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/brons?id="+id.ToString()+"&op="+op.ToString());
+    }
+
+    private bool ArendaExists(int bronid)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Arendas.Any(e => e.ArendaId == bronid);
+    }
+}

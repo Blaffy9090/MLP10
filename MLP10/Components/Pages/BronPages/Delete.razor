@@ -1,0 +1,70 @@
+﻿@page "/brons/delete"
+@using Microsoft.EntityFrameworkCore
+@using MLP10.Data
+@inject IDbContextFactory<MLP10.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Удалить</PageTitle>
+
+<h1>Удалить</h1>
+
+<p>Вы уверены, что хотите удалить запись?</p>
+<div>
+    <hr />
+    @if (bron is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">ApartamentId</dt>
+            <dd class="col-sm-10">@bron.ApartamentId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">GostId</dt>
+            <dd class="col-sm-10">@bron.GostId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">DateIn</dt>
+            <dd class="col-sm-10">@bron.DateIn</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">DateOut</dt>
+            <dd class="col-sm-10">@bron.DateOut</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Cost</dt>
+            <dd class="col-sm-10">@bron.Cost</dd>
+        </dl>
+        <EditForm method="post" Model="bron" OnValidSubmit="DeleteArenda" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(bron is null)">Удалить</button> |
+            <a href="/brons">Вернуться</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private Arenda? bron;
+
+    [SupplyParameterFromQuery]
+    private int ArendaId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        bron = await context.Arendas.FirstOrDefaultAsync(m => m.ArendaId == ArendaId);
+
+        if (bron is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteArenda()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Arendas.Remove(bron!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/brons");
+    }
+}

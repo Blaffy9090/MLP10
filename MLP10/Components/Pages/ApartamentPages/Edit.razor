@@ -1,0 +1,98 @@
+﻿@page "/apartaments/edit"
+@using Microsoft.EntityFrameworkCore
+@using MLP10.Data
+@inject IDbContextFactory<MLP10.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Редактировать</PageTitle>
+
+<h1>Редактировать</h1>
+
+<hr />
+@if (Apartament is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Apartament" OnValidSubmit="UpdateApartament" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Apartament.ApartamentId" value="@Apartament.ApartamentId" />
+                <div class="mb-3">
+                    <label for="apartamentnumber" class="form-label">Номер комнаты:</label>
+                    <InputNumber id="apartamentnumber" @bind-Value="Apartament.ApartamentNumber" class="form-control" />
+                    <ValidationMessage For="() => Apartament.ApartamentNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="apartamenttype" class="form-label">Тип номера:</label>
+                    <InputText id="apartamenttype" @bind-Value="Apartament.ApartamentType" class="form-control" />
+                    <ValidationMessage For="() => Apartament.ApartamentType" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="cost" class="form-label">Стоимость:</label>
+                    <InputNumber id="cost" @bind-Value="Apartament.Cost" class="form-control" />
+                    <ValidationMessage For="() => Apartament.Cost" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/apartaments">Вернуться к списку номеров</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int ApartamentId { get; set; }
+
+    [SupplyParameterFromForm]
+    private Apartament? Apartament { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Apartament ??= await context.Apartaments.FirstOrDefaultAsync(m => m.ApartamentId == ApartamentId);
+
+        if (Apartament is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateApartament()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Apartament!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ApartamentExists(Apartament!.ApartamentId))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/apartaments");
+    }
+
+    private bool ApartamentExists(int apartamentid)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Apartaments.Any(e => e.ApartamentId == apartamentid);
+    }
+}
