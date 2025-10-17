@@ -10,38 +10,39 @@
 
 <div>
     <hr />
-    @if (apartament is null)
+    @if (Apartament is null)
     {
         <p><em>Loading...</em></p>
     }
     else {
         <dl class="row">
             <dt class="col-sm-2">Номер комнаты</dt>
-            <dd class="col-sm-10">@apartament.ApartamentNumber</dd>
+            <dd class="col-sm-10">@Apartament.ApartamentNumber</dd>
             <dt class="col-sm-2">Тип номера</dt>
-            <dd class="col-sm-10">@apartament.ApartamentType</dd>
+            <dd class="col-sm-10">@Apartament.ApartamentType</dd>
             <dt class="col-sm-2">Стоимость</dt>
-            <dd class="col-sm-10">@apartament.Cost</dd>
+            <dd class="col-sm-10">@Apartament.Cost</dd>
         </dl>
         <div>
-            <a href="@($"/apartaments/edit?apartamentid={apartament.ApartamentId}")">Редактировать</a> |
+            <a href="@($"/apartaments/edit?apartamentid={Apartament.ApartamentId}")">Редактировать</a> |
             <a href="@($"/apartaments")">Вернуться к списку номеров</a>
         </div>
     }
 </div>
 
 @code {
-    private Apartament? apartament;
-
     [SupplyParameterFromQuery]
     private int ApartamentId { get; set; }
+
+    [SupplyParameterFromForm]
+    private Apartament? Apartament { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        apartament = await context.Apartaments.FirstOrDefaultAsync(m => m.ApartamentId == ApartamentId);
+        Apartament = await context.Apartaments.FirstOrDefaultAsync(m => m.ApartamentId == ApartamentId);
 
-        if (apartament is null)
+        if (Apartament is null)
         {
             NavigationManager.NavigateTo("notfound");
         }

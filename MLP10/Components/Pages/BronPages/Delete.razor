@@ -11,60 +11,74 @@
 <p>Вы уверены, что хотите удалить запись?</p>
 <div>
     <hr />
-    @if (bron is null)
+    @if (Arenda is null)
     {
         <p><em>Loading...</em></p>
     }
     else {
         <dl class="row">
             <dt class="col-sm-2">ApartamentId</dt>
-            <dd class="col-sm-10">@bron.ApartamentId</dd>
+            <dd class="col-sm-10">@Arenda.ApartamentId</dd>
         </dl>
         <dl class="row">
             <dt class="col-sm-2">GostId</dt>
-            <dd class="col-sm-10">@bron.GostId</dd>
+            <dd class="col-sm-10">@Arenda.GostId</dd>
         </dl>
         <dl class="row">
             <dt class="col-sm-2">DateIn</dt>
-            <dd class="col-sm-10">@bron.DateIn</dd>
+            <dd class="col-sm-10">@Arenda.DateIn</dd>
         </dl>
         <dl class="row">
             <dt class="col-sm-2">DateOut</dt>
-            <dd class="col-sm-10">@bron.DateOut</dd>
+            <dd class="col-sm-10">@Arenda.DateOut</dd>
         </dl>
         <dl class="row">
             <dt class="col-sm-2">Cost</dt>
-            <dd class="col-sm-10">@bron.Cost</dd>
+            <dd class="col-sm-10">@Arenda.Cost</dd>
         </dl>
-        <EditForm method="post" Model="bron" OnValidSubmit="DeleteArenda" FormName="delete" Enhance>
-            <button type="submit" class="btn btn-danger" disabled="@(bron is null)">Удалить</button> |
-            <a href="/brons">Вернуться</a>
+        <EditForm method="post" Model="Arenda" OnValidSubmit="DeleteArenda" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(Arenda is null)">Удалить</button> |
+            <a href="@($"brons?id={ArendaId}&op={op}")">Вернуться</a>
         </EditForm>
     }
 </div>
 
 @code {
-    private Arenda? bron;
-
     [SupplyParameterFromQuery]
     private int ArendaId { get; set; }
+
+    private Arenda? Arenda { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int? op { get; set; }
+
+    private int? id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        bron = await context.Arendas.FirstOrDefaultAsync(m => m.ArendaId == ArendaId);
+        Arenda = await context.Arendas.FirstOrDefaultAsync(m => m.ArendaId == ArendaId);
 
-        if (bron is null)
+        if (Arenda is null)
         {
             NavigationManager.NavigateTo("notfound");
+        }
+
+        if (op == 1)
+        {
+            id = Arenda!.ApartamentId;
+        }
+        else
+        {
+            id = Arenda!.GostId;
         }
     }
 
     private async Task DeleteArenda()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Arendas.Remove(bron!);
+        context.Arendas.Remove(Arenda!);
         await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/brons");
+        NavigationManager.NavigateTo("/brons?id=" + id.ToString() + "&op=" + op.ToString());
     }
 }

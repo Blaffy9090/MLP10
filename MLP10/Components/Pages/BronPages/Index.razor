@@ -35,9 +35,9 @@ else
     <PropertyColumn Title="стоимость" Property="bron => bron.Cost" />
 
     <TemplateColumn Context="bron">
-        <a href="@($"brons/edit?bronid={bron.ArendaId}&op={op}")">Редактировать</a> |
-        <a href="@($"brons/details?bronid={bron.ArendaId}&op={op}")">Просмотр</a> |
-        <a href="@($"brons/delete?bronid={bron.ArendaId}&op={op}")">Удалить</a>
+        <a href="@($"brons/edit?arendaid={bron.ArendaId}&op={op}")">Редактировать</a> |
+        <a href="@($"brons/details?arendaid={bron.ArendaId}&op={op}")">Просмотр</a> |
+        <a href="@($"brons/delete?arendaid={bron.ArendaId}&op={op}")">Удалить</a>
     </TemplateColumn>
 </QuickGrid>
 

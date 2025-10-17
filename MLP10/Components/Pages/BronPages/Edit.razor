@@ -87,6 +87,9 @@ else
     [SupplyParameterFromQuery]
     private int ArendaId { get; set; }
 
+    [SupplyParameterFromForm]
+    private Arenda? Arenda { get; set; }
+
     [SupplyParameterFromQuery]
     private int? op { get; set; }
 
@@ -95,9 +98,6 @@ else
     public IEnumerable<Apartament> apartaments = default!;
 
     public IEnumerable<Gost> gosts = default!;
-
-    [SupplyParameterFromForm]
-    private Arenda? Arenda { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

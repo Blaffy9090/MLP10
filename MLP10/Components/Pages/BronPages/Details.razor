@@ -10,26 +10,26 @@
 
 <div>
     <hr />
-    @if (bron is null)
+    @if (Arenda is null)
     {
         <p><em>Loading...</em></p>
     }
     else {
         <dl class="row">
             <dt class="col-sm-2">ApartamentId</dt>
-            <dd class="col-sm-10">@bron.ApartamentId</dd>
+            <dd class="col-sm-10">@Arenda.ApartamentId</dd>
             <dt class="col-sm-2">GostId</dt>
-            <dd class="col-sm-10">@bron.GostId</dd>
+            <dd class="col-sm-10">@Arenda.GostId</dd>
             <dt class="col-sm-2">DateIn</dt>
-            <dd class="col-sm-10">@bron.DateIn</dd>
+            <dd class="col-sm-10">@Arenda.DateIn</dd>
             <dt class="col-sm-2">DateOut</dt>
-            <dd class="col-sm-10">@bron.DateOut</dd>
+            <dd class="col-sm-10">@Arenda.DateOut</dd>
             <dt class="col-sm-2">Cost</dt>
-            <dd class="col-sm-10">@bron.Cost</dd>
+            <dd class="col-sm-10">@Arenda.Cost</dd>
         </dl>
         <div>
-            <a href="@($"/brons/edit?bronid={bron.ArendaId}&op={op}")">Редактировать</a> |
-            <a href="@($"/brons?op={op}")">Вернуться</a>
+            <a href="@($"/brons/edit?arendaid={ArendaId}&op={op}")">Редактировать</a> |
+            <a href="@($"/brons?id={id}&op={op}")">Вернуться</a>
         </div>
     }
 </div>
@@ -38,19 +38,31 @@
     [SupplyParameterFromQuery]
     private int? op { get; set; }
 
-    private Arenda? bron;
-
     [SupplyParameterFromQuery]
     private int ArendaId { get; set; }
+
+    [SupplyParameterFromForm]
+    private Arenda? Arenda { get; set; }
+
+    private int id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        bron = await context.Arendas.FirstOrDefaultAsync(m => m.ArendaId == ArendaId);
+        Arenda = await context.Arendas.FirstOrDefaultAsync(m => m.ArendaId == ArendaId);
 
-        if (bron is null)
+        if (Arenda is null)
         {
             NavigationManager.NavigateTo("notfound");
+        }
+
+        if (op == 1)
+        {
+            id = Arenda!.ApartamentId;
+        }
+        else
+        {
+            id = Arenda!.GostId;
         }
     }
 }

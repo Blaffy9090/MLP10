@@ -4,9 +4,9 @@
 @inject IDbContextFactory<MLP10.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Редактировать</PageTitle>
 
-<h1>Edit</h1>
+<h1>Редактировать</h1>
 
 <h2>Gost</h2>
 <hr />
@@ -47,14 +47,14 @@ else
                     <InputText id="phone" @bind-Value="Gost.Phone" class="form-control" />
                     <ValidationMessage For="() => Gost.Phone" class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/gosts">Back to List</a>
+    <a href="/gosts">Вернуться к списку</a>
 </div>
 
 @code {
