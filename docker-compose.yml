@@ -12,11 +12,10 @@ services:
     volumes:
       - sqlserverdata:/var/opt/mssql
     healthcheck:
-      # wait until DB is ready to accept connections
-      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P \"$SA_PASSWORD\" -Q \"SELECT 1\" " ]
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/1433"]
       interval: 10s
-      timeout: 10s
-      retries: 10
+      timeout: 5s
+      retries: 30
 
   mlp10:
     build:

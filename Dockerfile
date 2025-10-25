@@ -1,31 +1,32 @@
-# Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy solution and project files first (better layer caching)
 COPY MLP10.sln ./
 COPY MLP10/MLP10.csproj ./MLP10/
 
-# Restore dependencies
 RUN dotnet restore MLP10.sln
 
-# Copy the rest of the source
 COPY . .
 
-# Publish the app to /app
 RUN dotnet publish MLP10.sln -c Release -o /app
 
-# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-# Copy published files from build stage
 COPY --from=build /app ./
 
-# Expose port 80 (HTTP)
-EXPOSE 80
+RUN apt-get update && apt-get install -y wget unzip \
+    && wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
+    && bash dotnet-install.sh --channel 9.0 --install-dir /usr/share/dotnet \
+    && dotnet tool install --global dotnet-ef \
+    && ln -s /root/.dotnet/tools/dotnet-ef /usr/bin/dotnet-ef
 
+# Copy startup script
 COPY entrypoint.sh /app/
 RUN chmod +x /app/entrypoint.sh
 
+# Expose web port
+EXPOSE 80
+
+# Start script
 ENTRYPOINT ["/app/entrypoint.sh"]

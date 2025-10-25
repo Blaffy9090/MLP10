@@ -6,11 +6,26 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MLP10.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateIdentitySchema : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Apartaments",
+                columns: table => new
+                {
+                    ApartamentId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ApartamentNumber = table.Column<int>(type: "int", nullable: true),
+                    ApartamentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Cost = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Apartaments", x => x.ApartamentId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -48,6 +63,23 @@ namespace MLP10.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Gosts",
+                columns: table => new
+                {
+                    GostId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Birht = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Pasport = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Gosts", x => x.GostId);
                 });
 
             migrationBuilder.CreateTable(
@@ -156,6 +188,45 @@ namespace MLP10.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Arendas",
+                columns: table => new
+                {
+                    ArendaId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ApartamentId = table.Column<int>(type: "int", nullable: false),
+                    GostId = table.Column<int>(type: "int", nullable: false),
+                    DateIn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateOut = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Cost = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Arendas", x => x.ArendaId);
+                    table.ForeignKey(
+                        name: "FK_Arendas_Apartaments_ApartamentId",
+                        column: x => x.ApartamentId,
+                        principalTable: "Apartaments",
+                        principalColumn: "ApartamentId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Arendas_Gosts_GostId",
+                        column: x => x.GostId,
+                        principalTable: "Gosts",
+                        principalColumn: "GostId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Arendas_ApartamentId",
+                table: "Arendas",
+                column: "ApartamentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Arendas_GostId",
+                table: "Arendas",
+                column: "GostId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -200,6 +271,9 @@ namespace MLP10.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Arendas");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
             migrationBuilder.DropTable(
@@ -213,6 +287,12 @@ namespace MLP10.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Apartaments");
+
+            migrationBuilder.DropTable(
+                name: "Gosts");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

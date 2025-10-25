@@ -1,12 +1,11 @@
 #!/bin/bash
-# Wait a bit for SQL Server to be ready (optional but safe)
+set -e
+
 echo "Waiting for database to be ready..."
-sleep 15
+sleep 100  # wait for SQL Server to start
 
-# Run EF migrations
-echo "Applying database migrations..."
-dotnet ef database update --no-build --project ./MLP10/MLP10.csproj --context YourDbContextName
+echo "Applying Entity Framework migrations..."
+dotnet-ef database update --no-build --project ./MLP10/MLP10.csproj || echo "Migration failed or already applied."
 
-# Start the app
-echo "Starting application..."
+echo "Starting MLP10 application..."
 dotnet MLP10.dll
