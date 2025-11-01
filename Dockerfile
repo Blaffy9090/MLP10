@@ -10,16 +10,19 @@ COPY . .
 
 RUN dotnet publish MLP10.sln -c Release -o /app
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
 WORKDIR /app
 
 COPY --from=build /app ./
 
-RUN apt-get update && apt-get install -y wget unzip \
+RUN apk update && apk add --no-cache bash wget unzip \
     && wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
-    && bash dotnet-install.sh --channel 9.0 --install-dir /usr/share/dotnet \
-    && dotnet tool install --global dotnet-ef \
-    && ln -s /root/.dotnet/tools/dotnet-ef /usr/bin/dotnet-ef
+    && bash dotnet-install.sh --install-dir /usr/share/dotnet \
+    && rm dotnet-install.sh \
+    && export PATH="$PATH:/usr/share/dotnet" \
+    && dotnet tool install --global dotnet-ef --version 8.* \
+    && ln -s /root/.dotnet/tools/dotnet-ef /usr/bin/dotnet-ef \
+    && dotnet-ef --version # Verify installation
 
 # Copy startup script
 COPY entrypoint.sh /app/
