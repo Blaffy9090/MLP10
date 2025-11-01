@@ -42,7 +42,7 @@ jobs:
 
       - name: Test container
         run: |
-          docker run --rm myapp:test echo "Container works!"
+          dotnet test --configuration Release --no-build --verbosity normal
 
       - name: Save build log
         run: |
