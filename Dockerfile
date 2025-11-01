@@ -14,10 +14,11 @@ RUN dotnet restore MLP10.sln
 # Copy remaining source code
 COPY . .
 
-# Run tests as part of the build process
-RUN dotnet test MLP10.Tests/MLP10.Tests.csproj --verbosity normal
+# Build the solution
+RUN dotnet build MLP10.sln -c Release --no-restore
 
-RUN dotnet publish MLP10.sln -c Release -o /app
+# Publish the project (tests will run in CI, not in Docker build)
+RUN dotnet publish MLP10/MLP10.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
@@ -30,8 +31,7 @@ RUN apk update && apk add --no-cache bash wget unzip \
     && bash dotnet-install.sh --install-dir /usr/share/dotnet \
     && rm dotnet-install.sh \
     && dotnet tool install --global dotnet-ef --version 8.* \
-    && ln -s /root/.dotnet/tools/dotnet-ef /usr/bin/dotnet-ef \
-    && dotnet-ef --version # Verify installation
+    && ln -s /root/.dotnet/tools/dotnet-ef /usr/bin/dotnet-ef
 
 # Copy startup script
 COPY entrypoint.sh /app/
