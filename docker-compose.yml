@@ -5,7 +5,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: mlp10_db
     environment:
-      SA_PASSWORD: "${SA_PASSWORD}"
+      SA_PASSWORD: ${SA_PASSWORD}
       ACCEPT_EULA: "Y"
     ports:
       - "${DB_PORT}:1433"
@@ -29,6 +29,7 @@ services:
       - "${APP_PORT}:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__DefaultConnection=${DEFAULT_CONNECTION}
     env_file:
       - .env
