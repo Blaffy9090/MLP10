@@ -8,6 +8,9 @@ RUN dotnet restore MLP10.sln
 
 COPY . .
 
+# Run tests as part of the build process
+RUN dotnet test MLP10.Tests/MLP10.Tests.csproj --verbosity normal
+
 RUN dotnet publish MLP10.sln -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
