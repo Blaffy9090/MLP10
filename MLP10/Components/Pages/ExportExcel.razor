@@ -1,0 +1,104 @@
+﻿@page "/exportexcel"
+@using ClosedXML.Excel
+@using Microsoft.EntityFrameworkCore
+@using MLP10.Data
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject IJSRuntime js
+@implements IAsyncDisposable
+@rendermode InteractiveServer
+
+<h3>Экспорт в Excel</h3>
+<button class="btn btn-success mb-2" @onclick="ExportXLS">Экспорт всех таблиц в Excel</button>
+
+@code {
+    private ApplicationDbContext? context;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (context != null)
+            await context.DisposeAsync();
+    }
+
+    private async Task ExportXLS()
+    {
+        var data = ExportXLSData();
+        // вызываем JS функцию для скачивания
+        await js.InvokeVoidAsync("BlazorDownloadFile", "MLP10_Data.xlsx", data);
+    }
+
+    private byte[] ExportXLSData()
+    {
+        using var workbook = new XLWorkbook();
+
+        // 1) Apartament
+        var wsA = workbook.Worksheets.Add("Apartament");
+        wsA.Cell(1, 1).Value = "ApartamentId";
+        wsA.Cell(1, 2).Value = "ApartamentNumber";
+        wsA.Cell(1, 3).Value = "ApartamentType";
+        wsA.Cell(1, 4).Value = "Cost";
+        wsA.Row(1).Style.Font.Bold = true;
+
+        int r = 2;
+        foreach (var a in context!.Apartaments.AsNoTracking().ToList())
+        {
+            wsA.Cell(r, 1).Value = a.ApartamentId;
+            wsA.Cell(r, 2).Value = a.ApartamentNumber;
+            wsA.Cell(r, 3).Value = a.ApartamentType;
+            wsA.Cell(r, 4).Value = a.Cost;
+            r++;
+        }
+
+        // 2) Gost
+        var wsG = workbook.Worksheets.Add("Gost");
+        wsG.Cell(1, 1).Value = "GostId";
+        wsG.Cell(1, 2).Value = "FirstName";
+        wsG.Cell(1, 3).Value = "LastName";
+        wsG.Cell(1, 4).Value = "Birht";
+        wsG.Cell(1, 5).Value = "Pasport";
+        wsG.Cell(1, 6).Value = "Phone";
+        wsG.Row(1).Style.Font.Bold = true;
+
+        r = 2;
+        foreach (var g in context.Gosts.AsNoTracking().ToList())
+        {
+            wsG.Cell(r, 1).Value = g.GostId;
+            wsG.Cell(r, 2).Value = g.FirstName;
+            wsG.Cell(r, 3).Value = g.LastName;
+            wsG.Cell(r, 4).Value = g.Birht;
+            wsG.Cell(r, 5).Value = g.Pasport;
+            wsG.Cell(r, 6).Value = g.Phone;
+            r++;
+        }
+
+        // 3) Arenda
+        var wsR = workbook.Worksheets.Add("Arenda");
+        wsR.Cell(1, 1).Value = "ArendaId";
+        wsR.Cell(1, 2).Value = "ApartamentId";
+        wsR.Cell(1, 3).Value = "GostId";
+        wsR.Cell(1, 4).Value = "DateIn";
+        wsR.Cell(1, 5).Value = "DateOut";
+        wsR.Cell(1, 6).Value = "Cost";
+        wsR.Row(1).Style.Font.Bold = true;
+
+        r = 2;
+        foreach (var ar in context.Arendas.AsNoTracking().ToList())
+        {
+            wsR.Cell(r, 1).Value = ar.ArendaId;
+            wsR.Cell(r, 2).Value = ar.ApartamentId;
+            wsR.Cell(r, 3).Value = ar.GostId;
+            wsR.Cell(r, 4).Value = ar.DateIn;
+            wsR.Cell(r, 5).Value = ar.DateOut;
+            wsR.Cell(r, 6).Value = ar.Cost;
+            r++;
+        }
+
+        using var ms = new MemoryStream();
+        workbook.SaveAs(ms);
+        return ms.ToArray();
+    }
+}
