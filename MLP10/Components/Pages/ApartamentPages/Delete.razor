@@ -1,0 +1,62 @@
+﻿@page "/apartaments/delete"
+@using Microsoft.EntityFrameworkCore
+@using MLP10.Data
+@inject IDbContextFactory<MLP10.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Удалить</PageTitle>
+
+<h1>Удалить</h1>
+
+<p>Вы уверены, что хотите удалить запись?</p>
+<div>
+    <hr />
+    @if (apartament is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">ApartamentNumber</dt>
+            <dd class="col-sm-10">@apartament.ApartamentNumber</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">ApartamentType</dt>
+            <dd class="col-sm-10">@apartament.ApartamentType</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Cost</dt>
+            <dd class="col-sm-10">@apartament.Cost</dd>
+        </dl>
+        <EditForm method="post" Model="apartament" OnValidSubmit="DeleteApartament" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(apartament is null)">Удалить</button> |
+            <a href="/apartaments">Вернуться к списку номеров</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private Apartament? apartament;
+
+    [SupplyParameterFromQuery]
+    private int ApartamentId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        apartament = await context.Apartaments.FirstOrDefaultAsync(m => m.ApartamentId == ApartamentId);
+
+        if (apartament is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteApartament()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Apartaments.Remove(apartament!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/apartaments");
+    }
+}

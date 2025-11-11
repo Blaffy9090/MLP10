@@ -1,0 +1,132 @@
+﻿@page "/brons/create"
+@using Microsoft.EntityFrameworkCore
+@using MLP10.Data
+@inject IDbContextFactory<MLP10.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Добавить</PageTitle>
+
+<h1>Добавить</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Arenda" OnValidSubmit="AddArenda" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            @if (op == 2)
+            {
+                <div class="mb-3">
+                    <label for="apartamentid" class="form-label">Номер:</label>
+                    <InputSelect id="apartamentid" @bind-Value="Arenda.ApartamentId" class="form-control">
+                        <option value="">...</option>
+                        @if(apartaments != null)
+                        {
+                            @foreach (var apartament in apartaments)
+                            {
+                                <option value="@apartament.ApartamentId">@apartament.ApartamentNumber</option>
+                            }
+                        }
+                       
+                    </InputSelect>
+                    <ValidationMessage For="() => Arenda.ApartamentId" class="text-danger" />
+                </div>
+                <input type="hidden" name="Arenda.GostId" id="apartamentid" @bind="Arenda.GostId" />
+            }
+            @if (op == 1)
+            {
+                <div class="mb-3">
+                    <label for="apartamentid" class="form-label">Гость:</label>
+                    <InputSelect id="gostid" @bind-Value="Arenda.GostId" class="form-control">
+                        <option value="">...</option>
+                        @if (gosts != null)
+                        {
+                            @foreach (var gost in gosts)
+                            {
+                                <option value="@gost.GostId">@gost.FirstName @gost.LastName</option>
+                            }
+                        }
+
+                    </InputSelect>
+                    <ValidationMessage For="() => Arenda.GostId" class="text-danger" />
+                </div>
+                <input type="hidden" name="Arenda.ApartamentId" id="gostid" @bind="Arenda.ApartamentId" />
+            }
+            @* <div class="mb-3">
+                <label for="apartamentid" class="form-label">ApartamentId:</label> 
+                <InputNumber id="apartamentid" @bind-Value="Arenda.ApartamentId" class="form-control" /> 
+                <ValidationMessage For="() => Arenda.ApartamentId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="gostid" class="form-label">GostId:</label> 
+                <InputNumber id="gostid" @bind-Value="Arenda.GostId" class="form-control" /> 
+                <ValidationMessage For="() => Arenda.GostId" class="text-danger" /> 
+            </div>         *@
+            <div class="mb-3">
+                <label for="datein" class="form-label">Дата заселения:</label> 
+                <InputDate id="datein" @bind-Value="Arenda.DateIn" class="form-control" /> 
+                <ValidationMessage For="() => Arenda.DateIn" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="dateout" class="form-label">Дата выселения:</label> 
+                <InputDate id="dateout" @bind-Value="Arenda.DateOut" class="form-control" /> 
+                <ValidationMessage For="() => Arenda.DateOut" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="cost" class="form-label">Стоимость:</label> 
+                <InputNumber id="cost" @bind-Value="Arenda.Cost" class="form-control" /> 
+                <ValidationMessage For="() => Arenda.Cost" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="@($"brons?id={id}&op={op}")">Вернуться</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int id { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int? op { get; set; }
+
+    public IEnumerable<Apartament> apartaments = default!;
+
+    public IEnumerable<Gost> gosts = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        if (id == null || op == null)
+        {
+            NavigationManager.NavigateTo("not found");
+        }
+
+        if(op == 1)
+        {
+            gosts = await context.Gosts.ToListAsync();
+            Arenda.ApartamentId = id;
+        }
+        else
+        {
+            apartaments = await context.Apartaments.ToListAsync();
+            Arenda.GostId = id;
+        }
+
+    }
+
+    [SupplyParameterFromForm]
+    private Arenda Arenda { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddArenda()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Arendas.Add(Arenda);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/brons?id="+id.ToString()+"&op="+op.ToString());
+    }
+}
